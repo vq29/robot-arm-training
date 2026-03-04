@@ -1,0 +1,17 @@
+# Python environments
+.venv/
+venv/
+env/
+.env
+
+# Cache and temporary files
+__pycache__/
+*.pyc
+
+# Logs and checkpoints
+logs/
+models/
+
+# IDEs
+.vscode/
+.idea/

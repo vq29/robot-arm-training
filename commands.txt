@@ -1,0 +1,6 @@
+.venv\Scripts\activate
+pip install -r requirements.txt
+python train.py --episodes 1000 --no-gui    # headless = faster
+tensorboard --logdir=logs/tensorboard        # real-time monitoring
+python visualize.py                          # training_dashboard.png
+python demo_trained.py --targets 5           # watch the trained arm

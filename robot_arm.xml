@@ -1,0 +1,81 @@
+<mujoco model="robot_arm">
+  <compiler angle="radian" meshdir="."/>
+  <option timestep="0.00416" gravity="0 0 -9.81"/> <!-- 1/240 approx 0.00416 -->
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" width="100" height="100"/>
+    <material name="groundplane" texture="groundplane" texrepeat="10 10" reflectance="0.2"/>
+    
+    <material name="dark_gray" rgba="0.3 0.3 0.3 1"/>
+    <material name="blue" rgba="0.2 0.4 0.8 1"/>
+    <material name="teal" rgba="0.1 0.6 0.6 1"/>
+    <material name="orange" rgba="0.9 0.5 0.1 1"/>
+    <material name="green" rgba="0.1 0.9 0.2 1"/>
+    <material name="red" rgba="1 0.2 0.2 0.8"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+
+    <!-- Base Link -->
+    <body name="base_link" pos="0 0 0.025">
+      <geom type="cylinder" size="0.1 0.025" material="dark_gray"/> <!-- size is radius, half-length -->
+      
+      <!-- Link 1 -->
+      <!-- Joint 1 origin was 0 0 0.05 from base_link origin -->
+      <!-- But in MJCF bodies are nested. Relative pos. -->
+      <body name="link_1" pos="0 0 0.05"> 
+        <joint name="joint_1" type="hinge" axis="0 0 1" range="-3.14159 3.14159" damping="0.5" frictionloss="0.1"/>
+        <!-- Link visual/collision. Origin was 0 0 0.2 relative to joint frame -->
+        <geom type="cylinder" size="0.05 0.2" pos="0 0 0.2" material="blue"/>
+        
+        <!-- Link 2 -->
+        <!-- Joint 2 origin was 0 0 0.4 from link_1 origin (which was joint_1 argin) -->
+        <body name="link_2" pos="0 0 0.4">
+          <joint name="joint_2" type="hinge" axis="0 1 0" range="-3.14159 3.14159" damping="0.5" frictionloss="0.1"/>
+          <!-- Link visual/collision. Origin was 0 0 0.2 -->
+          <geom type="cylinder" size="0.04 0.2" pos="0 0 0.2" material="teal"/>
+          
+          <!-- Link 3 -->
+          <!-- Joint 3 origin was 0 0 0.4 from link_2 origin -->
+          <body name="link_3" pos="0 0 0.4">
+            <joint name="joint_3" type="hinge" axis="0 1 0" range="-3.14159 3.14159" damping="0.5" frictionloss="0.1"/>
+            <!-- Link visual/collision. Origin was 0 0 0.15 -->
+            <geom type="cylinder" size="0.03 0.15" pos="0 0 0.15" material="orange"/>
+            
+            <!-- End Effector -->
+            <!-- Fixed joint in URDF is just a site or fixed body in MJCF -->
+            <!-- Origin was 0 0 0.3 from link_3 origin (joint_3) -->
+            <body name="ee_link" pos="0 0 0.3">
+               <geom type="sphere" size="0.03" material="green"/>
+               <site name="ee_site" pos="0 0 0" size="0.01" rgba="1 0 0 0"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Target (Mocap body so we can move it freely) -->
+    <body name="target" mocap="true" pos="0.5 0 0.5">
+      <geom type="sphere" size="0.05" material="red" contype="0" conaffinity="0"/>
+    </body>
+
+  </worldbody>
+  
+  <actuator>
+    <!-- Motor/Torque control. Gear=1 for direct torque equivalent -->
+    <!-- ctrlrange matches URDF effort limit -->
+    <motor name="actuator_1" joint="joint_1" gear="1" ctrllimited="true" ctrlrange="-50 50"/>
+    <motor name="actuator_2" joint="joint_2" gear="1" ctrllimited="true" ctrlrange="-50 50"/>
+    <motor name="actuator_3" joint="joint_3" gear="1" ctrllimited="true" ctrlrange="-50 50"/>
+  </actuator>
+
+</mujoco>
